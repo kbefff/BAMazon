@@ -1,6 +1,7 @@
-// -- 5. Then create a Node application called `bamazonCustomer.js`. Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
+// -- 5. Then create a Node application called `bamazonCustomer.js`. 
 require('console.table');
 var mysql = require('mysql');
+var inquirer = require('inquirer');
 
 var connection = mysql.createConnection({
     howst: 'localhost',
@@ -10,24 +11,95 @@ var connection = mysql.createConnection({
     database: 'bamazon'
 });
 
-connection.connect(function(err){
+connection.connect(function (err) {
     if (err) throw err;
-    console.log("we are connected as id: " + connection.threadId);
-})
+    console.log('==============================================');
+    console.log('');
+
+    console.log('we are connected as id: ' + connection.threadId);
+    console.log('');
+    console.log('==============================================');
+    readProducts();
+
+});
+
+function getProduct() {
+
+
+}
+
+
+// Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
+function readProducts() {
+
+    connection.query('SELECT * FROM products', function (err, res) {
+        if (err) throw err;
+        console.log('==============================================');
+        console.log('');
+        console.table(res);
+        console.log('');
+        console.log('==============================================');
+        iqnuirer();
+
+    });
+};
+
 // -- 6. The app should then prompt users with two messages.
+function iqnuirer() {
+    inquirer.prompt(
+        [
+            // --    * The first should ask them the ID of the product they would like to buy.
+            {
+                type: 'list',
+                message: 'Which product would you like to purchase?',
+                choices: ['Shampoo bar', 'Conditioner bar', 'Windex', 'Cheerios', 'Pancake mix', 'Deep cleaning', 'Gardening', 'Staples', 'Kitty litter', 'GI Jane'],
+                name: 'products'
+            },
 
-// --    * The first should ask them the ID of the product they would like to buy.
-// --    * The second message should ask how many units of the product they would like to buy.
+            // --    * The second message should ask how many units of the product they would like to buy.
+            {
+                type: 'input',
+                message: 'How many units of the product they would you like to buy?',
+                name: 'units'
+            }
+        ]
+    ).then(function (inquirerResponse) {
 
-// -- 7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
+        // -- 7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
+        if (inquirerResponse.confirm) {
+            var customerSelection = inquirerResponse.products;
+            var unitsInStock = inquirerResponse.units;
+            console.log('==============================================');
+            console.log('');
+            console.log('You have selected ' + customerSelection);
+            console.log('There are ' + unitsInStock + ' units in stock')
+            console.log('');
+            console.log('==============================================');
+            // // --    * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
+            // if (unitsInStock)
 
-// --    * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
 
-// -- 8. However, if your store _does_ have enough of the product, you should fulfill the customer's order.
-// --    * This means updating the SQL database to reflect the remaining quantity.
-// --    * Once the update goes through, show the customer the total cost of their purchase.
+        } else {
+            console.log('==============================================');
+            console.log('');
+            console.log('else');
+            console.log('');
+            console.log('==============================================');
+            // -- 8. However, if your store _does_ have enough of the product, you should fulfill the customer's order.
+            // --    * This means updating the SQL database to reflect the remaining quantity.
+            // --    * Once the update goes through, show the customer the total cost of their purchase.
 
-// -- - - -
+            // -- - - -
+        }
+
+    });
+
+
+}
+
+
+
+
 
 // -- * If this activity took you between 8-10 hours, then you've put enough time into this assignment. Feel free to stop here -- unless you want to take on the next challenge.
 
@@ -40,11 +112,11 @@ connection.connect(function(err){
 // --   * List a set of menu options:
 
 // --     * View Products for Sale
-    
+
 // --     * View Low Inventory
-    
+
 // --     * Add to Inventory
-    
+
 // --     * Add New Product
 
 // --   * If a manager selects `View Products for Sale`, the app should list every available item: the item IDs, names, prices, and quantities.
@@ -78,7 +150,7 @@ connection.connect(function(err){
 // -- 3. Create another Node app called `bamazonSupervisor.js`. Running this application will list a set of menu options:
 
 // --    * View Product Sales by Department
-   
+
 // --    * Create New Department
 
 // -- 4. When a supervisor selects `View Product Sales by Department`, the app should display a summarized table in their terminal/bash window. Use the table below as a guide.
