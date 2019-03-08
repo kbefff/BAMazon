@@ -1,8 +1,9 @@
 // -- 5. Then create a Node application called `bamazonCustomer.js`. 
-require('console.table');
+// require('console.table');
 var mysql = require('mysql');
 var inquirer = require('inquirer');
 
+// ======================================== MYSQL CONNECTION ==========================================
 var connection = mysql.createConnection({
     howst: 'localhost',
     port: 3306,
@@ -23,151 +24,82 @@ connection.connect(function (err) {
 
 });
 
-function getProduct() {
+// ====================================================================================================
 
 
-}
-
-
-// Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
+// Running this application will first display all of the Products available for sale. Include the ids, names, and prices of products for sale.
 function readProducts() {
 
-    connection.query('SELECT * FROM products', function (err, res) {
+    connection.query('SELECT * FROM products', function (err, results) {
         if (err) throw err;
         console.log('==============================================');
         console.log('');
-        console.table(res);
+        console.table(results);
         console.log('');
         console.log('==============================================');
-        iqnuirer();
+        // iqnuirer();
 
+        inquirer
+            .prompt([{
+                    name: "choice",
+                    type: "rawlist",
+                    choices: function () {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].product_name);
+                        }
+                        return "this is the" + choiceArray;
+                    },
+                    message: "Which product would you like to purchase?"
+                },
+                {
+                    name: 'units',
+                    type: 'input',
+                    message: 'How many units of the product they would you like to buy?'
+                }
+            ])
+            .then(function (answer) {
+                connection.query('SELECT * FROM bamazon.products;', function (err, results, fields) {
+                    var itemIdInt = parseInt(itemID);
+                    var numUnitsInt = parseInt(numUnits);
+                    var chosenProduct;
+                    for (var i = 0; i < results.length; i++) {
+                        if (results[i].item_id === itemIdInt) {
+                            chosenProduct = results[i];
+                        }
+                    }
+
+                    if (chosenProduct.stock_quantity < numUnitsInt) {
+                        console.log("Insufficient quantity in stock!")
+                        prompt();
+                    } else {
+                        fulfillOrder(chosenProduct, numUnitsInt);
+                    }
+
+                });
+
+
+
+            });
     });
 };
 
-// -- 6. The app should then prompt users with two messages.
-function iqnuirer() {
-    inquirer.prompt(
-        [
-            // --    * The first should ask them the ID of the product they would like to buy.
-            {
-                type: 'list',
-                message: 'Which product would you like to purchase?',
-                choices: ['Shampoo bar', 'Conditioner bar', 'Windex', 'Cheerios', 'Pancake mix', 'Deep cleaning', 'Gardening', 'Staples', 'Kitty litter', 'GI Jane'],
-                name: 'products'
+function fulfillOrder(chosenItem, numUnitsInt) {
+    let newStock = chosenItem.stock_quantity - numUnitsInt;
+    let totalPrice = chosenItem.price * numUnitsInt;
+    connection.query(
+        "UPDATE products SET ? WHERE ?",
+        [{
+                stock_quantity: newStock
             },
-
-            // --    * The second message should ask how many units of the product they would like to buy.
             {
-                type: 'input',
-                message: 'How many units of the product they would you like to buy?',
-                name: 'units'
+                item_id: chosenItem.item_id
             }
-        ]
-    ).then(function (inquirerResponse) {
-
-        // -- 7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
-        if (inquirerResponse.confirm) {
-            var customerSelection = inquirerResponse.products;
-            var unitsInStock = inquirerResponse.units;
-            console.log('==============================================');
-            console.log('');
-            console.log('You have selected ' + customerSelection);
-            console.log('There are ' + unitsInStock + ' units in stock')
-            console.log('');
-            console.log('==============================================');
-            // // --    * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
-            // if (unitsInStock)
-
-
-        } else {
-            console.log('==============================================');
-            console.log('');
-            console.log('else');
-            console.log('');
-            console.log('==============================================');
-            // -- 8. However, if your store _does_ have enough of the product, you should fulfill the customer's order.
-            // --    * This means updating the SQL database to reflect the remaining quantity.
-            // --    * Once the update goes through, show the customer the total cost of their purchase.
-
-            // -- - - -
+        ],
+        function (error) {
+            if (error) throw err;
+            console.log(`You bought ${numUnitsInt} units of the ${chosenItem.product_name}. You spent a total of $${totalPrice}.`);
+            connection.end();
         }
-
-    });
-
-
-}
-
-
-
-
-
-// -- * If this activity took you between 8-10 hours, then you've put enough time into this assignment. Feel free to stop here -- unless you want to take on the next challenge.
-
-// -- - - -
-
-// -- ### Challenge #2: Manager View (Next Level)
-
-// -- * Create a new Node application called `bamazonManager.js`. Running this application will:
-
-// --   * List a set of menu options:
-
-// --     * View Products for Sale
-
-// --     * View Low Inventory
-
-// --     * Add to Inventory
-
-// --     * Add New Product
-
-// --   * If a manager selects `View Products for Sale`, the app should list every available item: the item IDs, names, prices, and quantities.
-
-// --   * If a manager selects `View Low Inventory`, then it should list all items with an inventory count lower than five.
-
-// --   * If a manager selects `Add to Inventory`, your app should display a prompt that will let the manager "add more" of any item currently in the store.
-
-// --   * If a manager selects `Add New Product`, it should allow the manager to add a completely new product to the store.
-
-// -- - - -
-
-// -- * If you finished Challenge #2 and put in all the hours you were willing to spend on this activity, then rest easy! Otherwise continue to the next and final challenge.
-
-// -- - - -
-
-// -- ### Challenge #3: Supervisor View (Final Level)
-
-// -- 1. Create a new MySQL table called `departments`. Your table should include the following columns:
-
-// --    * department_id
-
-// --    * department_name
-
-// --    * over_head_costs (A dummy number you set for each department)
-
-// -- 2. Modify the products table so that there's a product_sales column, and modify your `bamazonCustomer.js` app so that when a customer purchases anything from the store, the price of the product multiplied by the quantity purchased is added to the product's product_sales column.
-
-// --    * Make sure your app still updates the inventory listed in the `products` column.
-
-// -- 3. Create another Node app called `bamazonSupervisor.js`. Running this application will list a set of menu options:
-
-// --    * View Product Sales by Department
-
-// --    * Create New Department
-
-// -- 4. When a supervisor selects `View Product Sales by Department`, the app should display a summarized table in their terminal/bash window. Use the table below as a guide.
-
-// -- | department_id | department_name | over_head_costs | product_sales | total_profit |
-// -- | ------------- | --------------- | --------------- | ------------- | ------------ |
-// -- | 01            | Electronics     | 10000           | 20000         | 10000        |
-// -- | 02            | Clothing        | 60000           | 100000        | 40000        |
-
-// -- 5. The `total_profit` column should be calculated on the fly using the difference between `over_head_costs` and `product_sales`. `total_profit` should not be stored in any database. You should use a custom alias.
-
-// -- 6. If you can't get the table to display properly after a few hours, then feel free to go back and just add `total_profit` to the `departments` table.
-
-// --    * Hint: You may need to look into aliases in MySQL.
-
-// --    * Hint: You may need to look into GROUP BYs.
-
-// --    * Hint: You may need to look into JOINS.
-
-// --    * **HINT**: There may be an NPM package that can log the table to the console. What's is it? Good question :)
+    );
+};
