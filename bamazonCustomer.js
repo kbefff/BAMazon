@@ -16,7 +16,6 @@ connection.connect(function (err) {
     if (err) throw err;
     console.log('==============================================');
     console.log('');
-
     console.log('we are connected as id: ' + connection.threadId);
     console.log('');
     console.log('==============================================');
@@ -25,10 +24,8 @@ connection.connect(function (err) {
 });
 
 // ====================================================================================================
-
 // Running this application will first display all of the Products available for sale. Include the ids, names, and prices of products for sale.
 function readProducts() {
-
     connection.query('SELECT * FROM bamazon.products', function (err, results, fields) {
         if (err) throw err;
         console.log('==============================================');
@@ -57,7 +54,6 @@ function orderPrompt() {
             checkItem(answer.itemID, answer.units);
         });
 };
-
 
 function checkItem(itemId, numUnits) {
 
