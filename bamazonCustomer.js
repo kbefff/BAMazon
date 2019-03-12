@@ -98,28 +98,3 @@ function fulfillOrder(chosenItem, numUnitsInt) {
         }
     );
 };
-
-
-
-
-
-
-// function fulfillOrder(chosenItem, numUnitsInt) {
-//     let newStock = chosenItem.stock_quantity - numUnitsInt;
-//     let totalPrice = chosenItem.price * numUnitsInt;
-//     connection.query(
-//         "UPDATE products SET ? WHERE ?",
-//         [{
-//                 stock_quantity: newStock
-//             },
-//             {
-//                 item_id: chosenItem.item_id
-//             }
-//         ],
-//         function (error) {
-//             if (error) throw err;
-//             console.log(`You bought ${numUnitsInt} units of the ${chosenItem.product_name}. You spent a total of $${totalPrice}.`);
-//             connection.end();
-//         }
-//     );
-// };
